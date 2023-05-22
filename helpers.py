@@ -1,12 +1,27 @@
-non_used_cell = '0️⃣'
-bited_cell = '❌'
-empty_cell = '⬜️'
-ship_cell = '🟪'
-missed_cell = '▫️'
+from telebot import types
+
+from bot_init import players
+from player_profile import PlayerProfile
 
 
-def empty_field():
-    return [non_used_cell] + [empty_cell] * 100
+def get_user_by_id(p_id: int) -> PlayerProfile:
+    for p in players:
+        if p.player_id == p_id:
+            return p
+    return None
+
+
+cells_set: set[str] = {
+    'а1', 'а2', 'а3', 'а4', 'а5', 'а6', 'а7', 'а8', 'а9', 'а10',
+    'б1', 'б2', 'б3', 'б4', 'б5', 'б6', 'б7', 'б8', 'б9', 'б10',
+    'в1', 'в2', 'в3', 'в4', 'в5', 'в6', 'в7', 'в8', 'в9', 'в10',
+    'г1', 'г2', 'г3', 'г4', 'г5', 'г6', 'г7', 'г8', 'г9', 'г10',
+    'д1', 'д2', 'д3', 'д4', 'д5', 'д6', 'д7', 'д8', 'д9', 'д10',
+    'е1', 'е2', 'е3', 'е4', 'е5', 'е6', 'е7', 'е8', 'е9', 'е10',
+    'ж1', 'ж2', 'ж3', 'ж4', 'ж5', 'ж6', 'ж7', 'ж8', 'ж9', 'ж10',
+    'з1', 'з2', 'з3', 'з4', 'з5', 'з6', 'з7', 'з8', 'з9', 'з10',
+    'и1', 'и2', 'и3', 'и4', 'и5', 'и6', 'и7', 'и8', 'и9', 'и10',
+    'к1', 'к2', 'к3', 'к4', 'к5', 'к6', 'к7', 'к8', 'к9', 'к10'}
 
 
 def get_field(f: list[str]) -> str:
@@ -33,3 +48,13 @@ def get_field(f: list[str]) -> str:
         f[81], f[82], f[83], f[84], f[85], f[86], f[87], f[88], f[89], f[90],
         f[91], f[92], f[93], f[94], f[95], f[96], f[97], f[98], f[99], f[100]
     )
+
+
+def get_monospace_text(text: str) -> str:
+    return '<code>{0}</code>'.format(text)
+
+
+def check_turn(player: PlayerProfile) -> bool:
+    if player.turn:
+        return True
+    return False
