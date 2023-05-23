@@ -28,7 +28,7 @@ def assign_ships(message):
             ships_1.append(text_list_ships[i + 2])
             ships_1.append(text_list_ships[i + 3])
             ships_1.append(text_list_ships[i + 4])
-            del text_list_ships[i:i+5]
+            del text_list_ships[i:i + 5]
             break
 
     for i in range(len(text_list_ships)):
@@ -36,18 +36,18 @@ def assign_ships(message):
             ships_2.append(text_list_ships[i + 1])
             ships_2.append(text_list_ships[i + 2])
             ships_2.append(text_list_ships[i + 3])
-            del text_list_ships[i:i+4]
+            del text_list_ships[i:i + 4]
             break
     for i in range(len(text_list_ships)):
         if text_list_ships[i] == '3:':
             ships_3.append(text_list_ships[i + 1])
             ships_3.append(text_list_ships[i + 2])
-            del text_list_ships[i:i+3]
+            del text_list_ships[i:i + 3]
             break
     for i in range(len(text_list_ships)):
         if text_list_ships[i] == '4:':
             ships_4.append(text_list_ships[i + 1])
-            del text_list_ships[i:i+2]
+            del text_list_ships[i:i + 2]
             break
 
     busy_c = set()
@@ -162,5 +162,5 @@ def attack_cell(msg: Message) -> None:
         bot.send_message(en.player_id, 'Противник промахнулся.\n' +
                          '\nВаше поле:\n' + get_monospace_text(get_field(en.field)) +
                          '\nПоле врага:\n' + get_monospace_text(get_field(cur_pl.field_to_enemy)) +
-                         'Выберите ячейку для атаки',
+                         '\nВыберите ячейку для атаки',
                          parse_mode='html')
