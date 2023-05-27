@@ -54,7 +54,31 @@ def get_monospace_text(text: str) -> str:
     return '<code>{0}</code>'.format(text)
 
 
-def check_turn(player: PlayerProfile) -> bool:
-    if player.turn:
+def check_turn(pl: PlayerProfile) -> bool:
+    if pl.turn:
         return True
     return False
+
+
+def get_stage_1_text(pl: PlayerProfile):
+    return get_monospace_text(get_field(pl.field)) + \
+        '\nПоставьте корабли на свое поле. Ввод осуществить следующим образом:\n\n' \
+        'ввод\n' \
+        '1: а1 б3 в5 г7\n' \
+        '2: д1д2 г1г2 a1б1\n' \
+        '3: ж1ж2ж3 е1е2е3\n' \
+        '4: а1а2а3а4'
+
+
+def get_stage_2_first_player_text(pl: PlayerProfile):
+    return 'Игра начинается.\nВы ходите первым.\nВаше поле:\n' + \
+        get_monospace_text(get_field(pl.field)) + \
+        '\nПоле врага:\n' + \
+        get_monospace_text(get_field(pl.enemy.field_to_enemy)) + \
+        'Выберите ячейку для атаки'
+
+
+def get_stage_2_second_player_text(pl: PlayerProfile):
+    return 'Игра начинается.\nОжидайте хода первого игрока.\nВаше поле:\n' + \
+        get_monospace_text(get_field(pl.field)) + \
+        '\nПоле врага:\n' + get_monospace_text(get_field(pl.enemy.field_to_enemy))

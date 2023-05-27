@@ -2,7 +2,8 @@ from telebot.types import CallbackQuery, Message
 
 from actions import assign_ships, get_user_by_id, attack_cell
 from bot_init import bot, players, stage
-from helpers import get_field, get_monospace_text, cells_set
+from helpers import get_field, get_monospace_text, cells_set, get_stage_1_text, get_stage_2_first_player_text, \
+    get_stage_2_second_player_text
 from player_profile import PlayerProfile
 
 
@@ -21,23 +22,8 @@ def send_start_to_play_message(message: Message):
         bot.send_message(message.chat.id, 'Вы второй.')
         stage.v = 1
 
-        bot.send_message(players[0].player_id,
-                         get_monospace_text(get_field(players[0].field)) +
-                         '\nПоставьте корабли на свое поле. Ввод осуществить следующим образом:\n\n'
-                         'ввод\n'
-                         '1: а1 б3 в5 г7\n'
-                         '2: д1д2 г1г2 a1б1\n'
-                         '3: ж1ж2ж3 е1е2е3\n'
-                         '4: а1а2а3а4', parse_mode='html')
-
-        bot.send_message(message.chat.id,
-                         get_monospace_text(get_field(players[0].field)) +
-                         '\nПоставьте корабли на свое поле. Ввод осуществить следующим образом:\n\n'
-                         'ввод\n'
-                         '1: а1 б3 в5 г7\n'
-                         '2: д1д2 г1г2 a1б1\n'
-                         '3: ж1ж2ж3 е1е2е3\n'
-                         '4: а1а2а3а4', parse_mode='html')
+        bot.send_message(players[0].player_id, get_stage_1_text(players[0]), parse_mode='html')
+        bot.send_message(players[1].player_id, get_stage_1_text(players[0]), parse_mode='html')
     else:
         bot.send_message(message.chat.id, 'Уже идет игра. Подождите')
 
@@ -120,43 +106,16 @@ def callback_worker(call: CallbackQuery):
             stage.v = 2
             bot.send_message(current_player.player_id, 'Принято')
             if current_player == first_player:
-                bot.send_message(current_player.player_id,
-                                 'Игра начинается.\n'
-                                 'Вы ходите первым.'
-                                 '\nВаше поле:\n' +
-                                 get_monospace_text(get_field(current_player.field)) +
-                                 '\nПоле врага:\n' +
-                                 get_monospace_text(get_field(enemy.field_to_enemy)) +
-                                 'Выберите ячейку для атаки',
-                                 parse_mode='html')
-                bot.send_message(enemy.player_id, 'Игра начинается.\n'
-                                                  'Ожидайте хода первого игрока'
-                                                  '\nВаше поле:\n' +
-                                 get_monospace_text(get_field(enemy.field)) +
-                                 '\nПоле врага:\n' + get_monospace_text(get_field(current_player.field_to_enemy)),
-                                 parse_mode='html')
+                bot.send_message(current_player.player_id, get_stage_2_first_player_text(current_player), parse_mode='html')
+                bot.send_message(enemy.player_id, get_stage_2_second_player_text(enemy), parse_mode='html')
             else:
-                bot.send_message(enemy.player_id,
-                                 'Игра начинается.\n'
-                                 'Вы ходите первым.'
-                                 '\nВаше поле:\n' + get_monospace_text(get_field(enemy.field)) +
-                                 '\nПоле врага:\n' + get_monospace_text(get_field(current_player.field_to_enemy)) +
-                                 'Выберите ячейку для атаки',
-                                 parse_mode='html')
-                bot.send_message(current_player.player_id, 'Игра начинается.\n'
-                                                           'Ожидайте хода первого игрока.'
-                                                           '\nВаше поле:\n' +
-                                 get_monospace_text(get_field(current_player.field)) +
-                                 '\nПоле врага:\n' + get_monospace_text(get_field(enemy.field_to_enemy)),
-                                 parse_mode='html',
-                                 )
-
+                bot.send_message(enemy.player_id, get_stage_2_first_player_text(enemy), parse_mode='html')
+                bot.send_message(current_player.player_id, get_stage_2_second_player_text(current_player), parse_mode='html')
         else:
             if current_player == first_player:
                 bot.send_message(current_player.player_id, 'Принято. Дождитесь второго игрока')
             else:
                 bot.send_message(current_player.player_id, 'Принято. Дождитесь первого игрока')
-
     elif call.data == "reassign_ships":
         current_player = get_user_by_id(call.from_user.id)
         current_player.remove_ship_assignation()
