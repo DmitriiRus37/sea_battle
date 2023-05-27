@@ -37,7 +37,7 @@ def validate_ship(busy_cells: set[int], ships: list[str]) -> bool:
     return res
 
 
-def parse_ship_cells(sh: str):
+def parse_ship_cells(sh: str) -> list[str]:
     cells_list = []
     cur_cell = ''
     for ch in sh:

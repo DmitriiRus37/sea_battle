@@ -53,4 +53,3 @@ class PlayerProfile:
 
     def repeated_cell(self, coord_to_attack):
         return coord_to_attack in self.cells_attacked
-

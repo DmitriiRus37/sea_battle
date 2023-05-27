@@ -19,7 +19,7 @@ def send_start_to_play_message(message: Message):
         players.append(player_2)
         player_2.player_number = 'second'
         bot.send_message(message.chat.id, 'Вы второй.')
-        stage.insert(0, 1)
+        stage.v = 1
 
         bot.send_message(players[0].player_id,
                          get_monospace_text(get_field(players[0].field)) +
@@ -84,9 +84,6 @@ def send_rules_message(message):
           "то следует ответ «Убил(а)!». Оба игрока отмечают потопленный корабль на листе. " \
           "Стрелявший игрок получает право на ещё один выстрел.\n\n" \
           "Победителем считается тот, кто первым потопит все 10 кораблей противника"
-
-
-
     bot.send_message(message.chat.id, msg)
 
 
@@ -97,10 +94,10 @@ def start_welcome(message):
 
 @bot.message_handler(content_types=['text'])  # handle with text
 def handle_text(message):
-    message_text_array = message.text.split('\n')
+    message_text_array = message.text.split()
 
     # match message_text_array[0]:
-    if message_text_array[0] == "ввод":
+    if message_text_array[0].lower() == "ввод":
         assign_ships(message)
     elif message_text_array[0].lower() in cells_set:
         attack_cell(message)
@@ -120,7 +117,7 @@ def callback_worker(call: CallbackQuery):
         first_player = current_player if current_player.player_number == 'first' else enemy
 
         if enemy.ready_to_play:
-            stage.insert(0, 2)
+            stage.v = 2
             bot.send_message(current_player.player_id, 'Принято')
             if current_player == first_player:
                 bot.send_message(current_player.player_id,

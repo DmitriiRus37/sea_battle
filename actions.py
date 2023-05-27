@@ -11,12 +11,12 @@ from validation import validate_ship, to_coord
 
 
 def assign_ships(message):
-    if stage[0] != 1:
+    if stage.v != 1:
         bot.send_message(message.chat.id, 'Ждите. Расставлять корабли еще рано. Ожидайте второго игрока')
         return
     current_player = get_user_by_id(message.chat.id)
 
-    text_list_ships = re.split('\n|\s', message.text)
+    text_list_ships = message.text.lower().split()
 
     ships_1 = []
     ships_2 = []
@@ -95,7 +95,7 @@ def valid_cell_to_attack(text):
 
 
 def attack_cell(msg: Message) -> None:
-    if stage[0] != 2:
+    if stage.v != 2:
         bot.send_message(msg.chat.id, 'Игра еще не начата.')
         return
     cur_pl = get_user_by_id(msg.chat.id)
@@ -125,7 +125,7 @@ def attack_cell(msg: Message) -> None:
         dead_ship = en.attack_ship(coord_to_attack, sh)
         if en.all_ships_dead():
             del players[:]
-            stage.insert(0, 3)
+            stage.v = 3
             bot.send_message(cur_pl.player_id, 'Вы победили. Вы потопили все вражеские корабли')
             bot.send_message(en.player_id, 'Вы проиграли. Ваши корабли потоплены')
             # TODO

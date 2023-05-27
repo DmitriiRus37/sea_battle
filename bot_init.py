@@ -3,6 +3,12 @@ import telebot
 
 from player_profile import PlayerProfile
 
+
+class WrapValue:
+    def __init__(self, v):
+        self.v = v
+
+
 bot = telebot.TeleBot(config.telegram_bot_token)
 
 players: list[PlayerProfile] = []
@@ -11,4 +17,4 @@ players: list[PlayerProfile] = []
 # 1: 'assign_ships',
 # 2: 'game_is_running',
 # 3: 'game_finished'
-stage: list = [0]
+stage: WrapValue = WrapValue(0)
