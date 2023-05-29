@@ -91,7 +91,7 @@ def assign_ships(message):
 
 
 def valid_cell_to_attack(text):
-    return text.split().lower() in cells_set
+    return text.split()[0].lower() in cells_set
 
 
 def attack_cell(msg: Message) -> None:
