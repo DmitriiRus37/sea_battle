@@ -12,7 +12,6 @@ class PlayerProfile:
         self.field: list = empty_field()
         self.field_to_enemy: list = empty_field()
         self.enemy: PlayerProfile = None
-        self.cell_to_attack: str = ''
         self.turn: bool = None
         self.cells_attacked = set()
 

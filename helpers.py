@@ -59,7 +59,7 @@ def get_stage_1_text(pl: PlayerProfile):
         '4: а1а2а3а4'
 
 
-def get_stage_2_first_player_text(pl: PlayerProfile):
+def stage_2_pl_1_text(pl: PlayerProfile):
     return 'Игра начинается.\nВы ходите первым.\nВаше поле:\n' + \
         get_monospace_text(get_field(pl.field)) + \
         '\nПоле врага:\n' + \
@@ -67,7 +67,7 @@ def get_stage_2_first_player_text(pl: PlayerProfile):
         'Выберите ячейку для атаки'
 
 
-def get_stage_2_second_player_text(pl: PlayerProfile):
+def stage_2_pl_2_text(pl: PlayerProfile):
     return 'Игра начинается.\nОжидайте хода первого игрока.\nВаше поле:\n' + \
         get_monospace_text(get_field(pl.field)) + \
         '\nПоле врага:\n' + get_monospace_text(get_field(pl.enemy.field_to_enemy))

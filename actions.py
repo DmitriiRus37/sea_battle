@@ -12,7 +12,7 @@ from validation import validate_ship, to_coord
 
 def assign_ships(message):
     if stage.v != 1:
-        bot.send_message(message.chat.id, 'Ждите. Расставлять корабли еще рано. Ожидайте второго игрока')
+        bot.send_message(message.chat.id, 'Расставлять корабли еще рано. Ожидайте соперника')
         return
     current_player = get_user_by_id(message.chat.id)
 
@@ -105,14 +105,13 @@ def attack_cell(msg: Message) -> None:
     if not valid_cell_to_attack(msg.text):
         bot.send_message(msg.chat.id, 'Невалидная ячейка. Введите еще раз')
         return
-    cur_pl.cell_to_attack = msg.text
+    cell_to_attack = msg.text
     cur_pl = get_user_by_id(msg.chat.id)
     if not check_turn(cur_pl):
         bot.send_message(msg.chat.id, 'Сейчас ходит ваш оппонент. Дождитесь своей очереди')
         return
-    letter, digit = cur_pl.cell_to_attack[0].lower(), int(cur_pl.cell_to_attack[1:])
+    letter, digit = cell_to_attack[0].lower(), int(cell_to_attack[1:])
     coord_to_attack = to_coord(letter, digit)
-    cur_pl.cell_to_attack = ''
     en = cur_pl.enemy
     if en.repeated_cell(coord_to_attack):
         bot.send_message(msg.chat.id, 'В эту ячейку нельзя стрелять')

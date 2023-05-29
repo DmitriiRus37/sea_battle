@@ -2,8 +2,7 @@ from telebot.types import CallbackQuery, Message
 
 from actions import assign_ships, get_user_by_id, attack_cell
 from bot_init import bot, players, stage
-from helpers import get_field, get_monospace_text, cells_set, get_stage_1_text, get_stage_2_first_player_text, \
-    get_stage_2_second_player_text
+from helpers import cells_set, get_stage_1_text, stage_2_pl_1_text, stage_2_pl_2_text
 from player_profile import PlayerProfile
 
 
@@ -106,11 +105,11 @@ def callback_worker(call: CallbackQuery):
             stage.v = 2
             bot.send_message(current_player.player_id, 'Принято')
             if current_player == first_player:
-                bot.send_message(current_player.player_id, get_stage_2_first_player_text(current_player), parse_mode='html')
-                bot.send_message(enemy.player_id, get_stage_2_second_player_text(enemy), parse_mode='html')
+                bot.send_message(current_player.player_id, stage_2_pl_1_text(current_player), parse_mode='html')
+                bot.send_message(enemy.player_id, stage_2_pl_2_text(enemy), parse_mode='html')
             else:
-                bot.send_message(enemy.player_id, get_stage_2_first_player_text(enemy), parse_mode='html')
-                bot.send_message(current_player.player_id, get_stage_2_second_player_text(current_player), parse_mode='html')
+                bot.send_message(enemy.player_id, stage_2_pl_1_text(enemy), parse_mode='html')
+                bot.send_message(current_player.player_id, stage_2_pl_2_text(current_player), parse_mode='html')
         else:
             if current_player == first_player:
                 bot.send_message(current_player.player_id, 'Принято. Дождитесь второго игрока')
