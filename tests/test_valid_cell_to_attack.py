@@ -5,14 +5,10 @@ from actions import valid_cell_to_attack
 class TestValidCellToAttack(TestCase):
 
     def test_valid_cell_to_attack(self):
-        cell_to_test = 'а1'
-        assert valid_cell_to_attack(cell_to_test)
-
-        cell_to_test = ' а1'
-        assert valid_cell_to_attack(cell_to_test)
-
-        cell_to_test = '  а1'
-        assert valid_cell_to_attack(cell_to_test)
-
-        cell_to_test = '\nа1'
-        assert valid_cell_to_attack(cell_to_test)
+        assert valid_cell_to_attack('а1')
+        assert valid_cell_to_attack(' а1')
+        assert valid_cell_to_attack('  а1  ')
+        assert valid_cell_to_attack('\nа1       \n\t')
+        assert not valid_cell_to_attack('а11')
+        assert not valid_cell_to_attack('й10')
+        assert not valid_cell_to_attack('а 1')
