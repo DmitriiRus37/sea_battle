@@ -91,7 +91,7 @@ def assign_ships(message):
 
 
 def valid_cell_to_attack(text):
-    return True if 2 <= len(text) <= 3 and text.lower() in cells_set else False
+    return text.split().lower() in cells_set
 
 
 def attack_cell(msg: Message) -> None:
