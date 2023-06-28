@@ -14,6 +14,13 @@ class PlayerProfile:
         self.enemy: PlayerProfile = None
         self.turn: bool = None
         self.cells_attacked = set()
+        # 0 - другая стадия игры,
+        # 1 - расстановка однопалубных,
+        # 2 - двухпалубных,
+        # 3 - трехпалубных,
+        # 4 - четырехпалубных
+        self.stage_assign_decks: int = 0
+        self.busy_cells: set = set()
 
     def find_ship_by_cell_attacked(self, cell: int) -> tuple[bool, Ship]:
         for sh in self.ships:

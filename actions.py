@@ -1,67 +1,81 @@
 from telebot import types
 from telebot.types import Message
 
-import re
 from bot_init import bot, players, stage
 from cells import ship_cell
 from helpers import get_monospace_text, get_field, check_turn, get_user_by_id, \
-    cells_set
+    cells_set, get_stage_ship_decks_2_text, get_stage_ship_decks_3_text, get_stage_ship_decks_4_text
 from ship import Ship
-from validation import validate_ship, to_coord
+from validation import validate_ships, to_coord
 
 
 def assign_ships(message):
     if stage.v != 1:
         bot.send_message(message.chat.id, 'Расставлять корабли еще рано. Ожидайте соперника')
         return
-    current_player = get_user_by_id(message.chat.id)
 
     text_list_ships = message.text.lower().split()
+    current_player = get_user_by_id(message.chat.id)
 
-    ships_1 = []
-    ships_2 = []
-    ships_3 = []
-    ships_4 = []
-    for i in range(len(text_list_ships)):
-        if text_list_ships[i] == '1:':
-            ships_1.append(text_list_ships[i + 1])
-            ships_1.append(text_list_ships[i + 2])
-            ships_1.append(text_list_ships[i + 3])
-            ships_1.append(text_list_ships[i + 4])
-            del text_list_ships[i:i + 5]
-            break
+    ships_to_assign = current_player.stage_assign_decks
 
-    for i in range(len(text_list_ships)):
-        if text_list_ships[i] == '2:':
-            ships_2.append(text_list_ships[i + 1])
-            ships_2.append(text_list_ships[i + 2])
-            ships_2.append(text_list_ships[i + 3])
-            del text_list_ships[i:i + 4]
-            break
-    for i in range(len(text_list_ships)):
-        if text_list_ships[i] == '3:':
-            ships_3.append(text_list_ships[i + 1])
-            ships_3.append(text_list_ships[i + 2])
-            del text_list_ships[i:i + 3]
-            break
-    for i in range(len(text_list_ships)):
-        if text_list_ships[i] == '4:':
-            ships_4.append(text_list_ships[i + 1])
-            del text_list_ships[i:i + 2]
-            break
+    match ships_to_assign:
+        case 1:
+            res = assign_s(current_player, text_list_ships, message, 1)
+            if res:
+                current_player.stage_assign_decks = 2
+                bot.send_message(message.chat.id, get_stage_ship_decks_2_text(current_player), parse_mode='html')
+        case 2:
+            res = assign_s(current_player, text_list_ships, message, 2)
+            if res:
+                current_player.stage_assign_decks = 3
+                bot.send_message(message.chat.id, get_stage_ship_decks_3_text(current_player), parse_mode='html')
+        case 3:
+            res = assign_s(current_player, text_list_ships, message, 3)
+            if res:
+                current_player.stage_assign_decks = 4
+                bot.send_message(message.chat.id, get_stage_ship_decks_4_text(current_player), parse_mode='html')
+        case 4:
+            res = assign_s(current_player, text_list_ships, message, 4)
+            if res:
+                keyboard = types.InlineKeyboardMarkup()
+                key_commit = types.InlineKeyboardButton(text='Подтвердить ✅', callback_data='commit_ships')
+                key_reassign = types.InlineKeyboardButton(text='Ввести заново 🔁', callback_data='reassign_ships')
+                keyboard.add(key_commit)
+                keyboard.add(key_reassign)
+                bot.send_message(message.chat.id,
+                                 get_monospace_text(get_field(current_player.field))+
+                                 '\nХотите продолжить или заново расставить корабли?',
+                                 reply_markup=keyboard,
+                                 parse_mode='html')
 
-    busy_c = set()
-    v1 = validate_ship(busy_c, ships_1)
-    v2 = validate_ship(busy_c, ships_2)
-    v3 = validate_ship(busy_c, ships_3)
-    v4 = validate_ship(busy_c, ships_4)
-    if v1 and v2 and v3 and v4:
-        validated = True
-    else:
-        validated = False
+
+def assign_s(current_player, text_list_ships, message, decks):
     f_working = current_player.field
+    ships = text_list_ships
+
+    busy_cells = current_player.busy_cells.copy()
+    if not validate_ships(busy_cells, ships, decks):
+        decks_str = None
+        match decks:
+            case 1:
+                decks_str = 'однопалубные корабли'
+            case 2:
+                decks_str = 'двухпалубные корабли'
+            case 3:
+                decks_str = 'трехпалубные корабли'
+            case 4:
+                decks_str = 'четырехпалубный корабль'
+
+        bot.send_message(message.chat.id,
+                         'У вас ошибка, попробуйте расставить '+decks_str+' заново\n' +
+                         get_monospace_text(get_field(f_working)),
+                         parse_mode='html')
+        return False
+
+    current_player.busy_cells = busy_cells
     cells_ships = set()
-    for sh in ships_1 + ships_2 + ships_3 + ships_4:
+    for sh in ships:
         current_player.ships.append(Ship(sh))
         if isinstance(sh, list):
             [cells_ships.add(cell) for cell in sh]
@@ -72,22 +86,7 @@ def assign_ships(message):
     for i in range(len(f_working)):
         if i in cells_ships:
             f_working[i] = ship_cell
-
-    if not validated:
-        bot.send_message(message.chat.id, 'У вас ошибка, попробуйте расставить корабли заново\n' +
-                         get_monospace_text(get_field(f_working)),
-                         parse_mode='html')
-        current_player.remove_ship_assignation()
-        return
-
-    keyboard = types.InlineKeyboardMarkup()
-    key_commit = types.InlineKeyboardButton(text='Подтвердить ✅', callback_data='commit_ships')
-    key_reassign = types.InlineKeyboardButton(text='Ввести заново 🔁', callback_data='reassign_ships')
-    keyboard.add(key_commit)
-    keyboard.add(key_reassign)
-    bot.send_message(message.chat.id, get_monospace_text(get_field(f_working)),
-                     parse_mode='html',
-                     reply_markup=keyboard)
+    return True
 
 
 def valid_cell_to_attack(text):

@@ -2,7 +2,7 @@ from telebot.types import CallbackQuery, Message
 
 from actions import assign_ships, get_user_by_id, attack_cell
 from bot_init import bot, players, stage
-from helpers import cells_set, get_stage_1_text, stage_2_pl_1_text, stage_2_pl_2_text
+from helpers import cells_set, get_stage_ship_decks_1_text, stage_2_pl_1_text, stage_2_pl_2_text
 from player_profile import PlayerProfile
 
 
@@ -20,10 +20,12 @@ def send_start_to_play_message(message: Message):
         player_2.player_number = 'second'
         bot.send_message(message.chat.id, 'Вы второй.')
         stage.v = 1
+        for p in players:
+            p.stage_assign_decks = 1
 
         # TODO асинхронно надо отправлять
-        bot.send_message(players[0].player_id, get_stage_1_text(players[0]), parse_mode='html')
-        bot.send_message(players[1].player_id, get_stage_1_text(players[0]), parse_mode='html')
+        bot.send_message(players[0].player_id, get_stage_ship_decks_1_text(players[0]), parse_mode='html')
+        bot.send_message(players[1].player_id, get_stage_ship_decks_1_text(players[0]), parse_mode='html')
     else:
         bot.send_message(message.chat.id, 'Уже идет игра. Подождите')
 
@@ -83,7 +85,8 @@ def handle_text(message):
     message_text_array = message.text.split()
 
     # match message_text_array[0]:
-    if message_text_array[0].lower() == "ввод":
+    player = get_user_by_id(message.chat.id)
+    if player.stage_assign_decks != 0:
         assign_ships(message)
     elif message_text_array[0].lower() in cells_set:
         attack_cell(message)
@@ -95,6 +98,7 @@ def handle_text(message):
 def callback_worker(call: CallbackQuery):
     if call.data == "commit_ships":
         current_player = get_user_by_id(call.from_user.id)
+        current_player.stage_assign_decks = 0
         current_player.ready_to_play = True
         current_player.turn = True
 
@@ -120,14 +124,12 @@ def callback_worker(call: CallbackQuery):
                 bot.send_message(current_player.player_id, 'Принято. Дождитесь первого игрока')
     elif call.data == "reassign_ships":
         current_player = get_user_by_id(call.from_user.id)
+        current_player.stage_assign_decks = 1
         current_player.remove_ship_assignation()
-        bot.send_message(call.from_user.id,
-                         'Поставьте корабли на свое поле. Ввод осуществить следующим образом:\n\n'
-                         'ввод\n'
-                         '1: а1 б3 в5 г7\n'
-                         '2: д1д2 г1г2 a1б1\n'
-                         '3: ж1ж2ж3 е1е2е3\n'
-                         '4: а1а2а3а4')
+        bot.send_message(
+            call.from_user.id,
+            get_stage_ship_decks_1_text(current_player),
+            parse_mode='html')
 
 
 bot.polling(non_stop=True)

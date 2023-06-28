@@ -8,8 +8,8 @@ def validate_ship_cells(cur_ship_cells: list[int]) -> bool:
     direction_hor = True if math.fabs(cur_ship_cells[0] - cur_ship_cells[1]) == 1 else False
 
     for i in range(len(cur_ship_cells) - 1):
-        cur_cell = cur_ship_cells[0]
-        next_cell = cur_ship_cells[1]
+        cur_cell = cur_ship_cells[i]
+        next_cell = cur_ship_cells[i + 1]
         if direction_hor:
             if math.fabs(cur_cell - next_cell) != 1:
                 return False
@@ -19,8 +19,24 @@ def validate_ship_cells(cur_ship_cells: list[int]) -> bool:
     return True
 
 
-def validate_ship(busy_cells: set[int], ships: list[str]) -> bool:
+def validate_ships(busy_cells: set[int], ships: list[str], decks: int) -> bool:
     res = True
+    match decks:
+        case 1:
+            if len(ships) != 4:
+                res = False
+        case 2:
+            if len(ships) != 3:
+                res = False
+        case 3:
+            if len(ships) != 2:
+                res = False
+        case 4:
+            if len(ships) != 1:
+                res = False
+    if not res:
+        # TODO добавить к сообщению информацию о том, что ошибка возникла из-за неправильного числа кораблей
+        return False
     for i in range(len(ships)):
         sh = ships[i]
         cur_ship_cells = []
