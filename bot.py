@@ -21,6 +21,7 @@ def send_start_to_play_message(message: Message):
         bot.send_message(message.chat.id, 'Вы второй.')
         stage.v = 1
 
+        # TODO асинхронно надо отправлять
         bot.send_message(players[0].player_id, get_stage_1_text(players[0]), parse_mode='html')
         bot.send_message(players[1].player_id, get_stage_1_text(players[0]), parse_mode='html')
     else:
@@ -105,9 +106,11 @@ def callback_worker(call: CallbackQuery):
             stage.v = 2
             bot.send_message(current_player.player_id, 'Принято')
             if current_player == first_player:
+                # TODO асинхронно надо отправлять
                 bot.send_message(current_player.player_id, stage_2_pl_1_text(current_player), parse_mode='html')
                 bot.send_message(enemy.player_id, stage_2_pl_2_text(enemy), parse_mode='html')
             else:
+                # TODO асинхронно надо отправлять
                 bot.send_message(enemy.player_id, stage_2_pl_1_text(enemy), parse_mode='html')
                 bot.send_message(current_player.player_id, stage_2_pl_2_text(current_player), parse_mode='html')
         else:
