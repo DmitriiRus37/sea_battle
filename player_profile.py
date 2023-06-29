@@ -1,3 +1,5 @@
+import enum
+
 from cells import bited_cell, empty_field, missed_cell
 from ship import Ship
 
@@ -7,7 +9,7 @@ class PlayerProfile:
     def __init__(self, user_id):
         self.ships: list[Ship] = []
         self.ready_to_play: bool = False
-        self.player_number: str = None
+        self.player_number: PlayerNumber = None
         self.player_id: int = user_id
         self.field: list = empty_field()
         self.field_to_enemy: list = empty_field()
@@ -59,3 +61,8 @@ class PlayerProfile:
 
     def repeated_cell(self, coord_to_attack):
         return coord_to_attack in self.cells_attacked
+
+
+class PlayerNumber(enum.Enum):
+    first = 1
+    second = 2

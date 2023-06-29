@@ -5,7 +5,7 @@ from bot_init import bot, players, stage
 from cells import ship_cell
 from helpers import get_monospace_text, get_field, check_turn, get_user_by_id, \
     cells_set, get_stage_ship_decks_2_text, get_stage_ship_decks_3_text, get_stage_ship_decks_4_text
-from ship import Ship
+from ship import Ship, Deck
 from validation import validate_ships, to_coord
 
 
@@ -21,22 +21,22 @@ def assign_ships(message):
 
     match ships_to_assign:
         case 1:
-            res = assign_s(current_player, text_list_ships, message, 1)
+            res = assign_s(current_player, text_list_ships, message, Deck.one)
             if res:
                 current_player.stage_assign_decks = 2
                 bot.send_message(message.chat.id, get_stage_ship_decks_2_text(current_player), parse_mode='html')
         case 2:
-            res = assign_s(current_player, text_list_ships, message, 2)
+            res = assign_s(current_player, text_list_ships, message, Deck.two)
             if res:
                 current_player.stage_assign_decks = 3
                 bot.send_message(message.chat.id, get_stage_ship_decks_3_text(current_player), parse_mode='html')
         case 3:
-            res = assign_s(current_player, text_list_ships, message, 3)
+            res = assign_s(current_player, text_list_ships, message, Deck.three)
             if res:
                 current_player.stage_assign_decks = 4
                 bot.send_message(message.chat.id, get_stage_ship_decks_4_text(current_player), parse_mode='html')
         case 4:
-            res = assign_s(current_player, text_list_ships, message, 4)
+            res = assign_s(current_player, text_list_ships, message, Deck.four)
             if res:
                 keyboard = types.InlineKeyboardMarkup()
                 key_commit = types.InlineKeyboardButton(text='Подтвердить ✅', callback_data='commit_ships')
@@ -58,13 +58,13 @@ def assign_s(current_player, text_list_ships, message, decks):
     if not validate_ships(busy_cells, ships, decks):
         decks_str = None
         match decks:
-            case 1:
+            case Deck.one:
                 decks_str = 'однопалубные корабли'
-            case 2:
+            case Deck.two:
                 decks_str = 'двухпалубные корабли'
-            case 3:
+            case Deck.three:
                 decks_str = 'трехпалубные корабли'
-            case 4:
+            case Deck.four:
                 decks_str = 'четырехпалубный корабль'
 
         bot.send_message(message.chat.id,

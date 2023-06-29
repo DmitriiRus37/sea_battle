@@ -1,3 +1,5 @@
+import enum
+
 from cells import bited_cell, missed_cell
 from validation import append_nearby_cells
 
@@ -39,3 +41,10 @@ class Ship:
     def hit_cell(self, cell):
         self.cells[cell] = False
         self.check_if_dead()
+
+
+class Deck(enum.Enum):
+    one = 1
+    two = 2
+    three = 3
+    four = 4

@@ -3,21 +3,21 @@ from telebot.types import CallbackQuery, Message
 from actions import assign_ships, get_user_by_id, attack_cell
 from bot_init import bot, players, stage
 from helpers import cells_set, get_stage_ship_decks_1_text, stage_2_pl_1_text, stage_2_pl_2_text
-from player_profile import PlayerProfile
+from player_profile import PlayerProfile, PlayerNumber as Pl_num
 
 
 def send_start_to_play_message(message: Message):
     if len(players) == 0:
         player_1 = PlayerProfile(message.chat.id)
         players.append(player_1)
-        player_1.player_number = 'first'
+        player_1.player_number = Pl_num.first
         bot.send_message(message.chat.id, 'Вы первый. Ожидайте второго игрока')
     elif len(players) == 1:
         player_2 = PlayerProfile(message.chat.id)
         player_2.enemy = players[0]
         players[0].enemy = player_2
         players.append(player_2)
-        player_2.player_number = 'second'
+        player_2.player_number = Pl_num.second
         bot.send_message(message.chat.id, 'Вы второй.')
         stage.v = 1
         for p in players:
@@ -104,7 +104,7 @@ def callback_worker(call: CallbackQuery):
 
         enemy = current_player.enemy
 
-        first_player = current_player if current_player.player_number == 'first' else enemy
+        first_player = current_player if current_player.player_number == Pl_num.first else enemy
 
         if enemy.ready_to_play:
             stage.v = 2
