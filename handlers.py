@@ -165,13 +165,13 @@ async def handle_rules(message: types.Message):
 
 async def handle_play(message: types.Message):
     if len(parties) == 0 or len(parties[len(parties) - 1].players) == 2:
-        cur_party = Party()
+        cur_party = Party(len(parties)+1)
         parties.append(cur_party)
+        await message.answer("Создание новой партии")
     else:
         cur_party = parties[len(parties) - 1]
 
     if len(cur_party.players) == 0:
-        await message.answer("Создание новой партии")
         pl_1 = Pl(message.chat.id)
         pl_1.party = cur_party
         cur_party.players.append(pl_1)
@@ -187,6 +187,7 @@ async def handle_play(message: types.Message):
         cur_party.stage.v = 1
         for p in cur_party.players:
             p.stage_assign_decks = 1
+            await bot.send_message(p.player_id, f"Номер вашей партии: {len(parties)}")
             await bot.send_message(
                 p.player_id,
                 'Введите команду /assign для расстановки кораблей')
@@ -218,15 +219,14 @@ async def handle_text(message: types.Message):
             return
         found, sh = en.find_ship_by_cell_attacked(coord_to_attack)
 
-        bot.send_message(cur_pl.player_id, 'Вы стреляете: ' + letter + str(digit))
-        bot.send_message(en.player_id, 'Противник стреляет : ' + letter + str(digit))
+        await bot.send_message(cur_pl.player_id, 'Вы стреляете: ' + letter + str(digit))
+        await bot.send_message(en.player_id, 'Противник стреляет : ' + letter + str(digit))
         if found:
             dead_ship = en.attack_ship(coord_to_attack, sh)
             if en.all_ships_dead():
-                bot.send_message(cur_pl.player_id, 'Вы победили. Вы потопили все вражеские корабли')
-                bot.send_message(en.player_id, 'Вы проиграли. Ваши корабли потоплены')
                 parties.remove(cur_party)
-
+                await bot.send_message(cur_pl.player_id, 'Вы победили. Вы потопили все вражеские корабли')
+                await bot.send_message(en.player_id, 'Вы проиграли. Ваши корабли потоплены')
                 return
 
             if dead_ship:
@@ -236,12 +236,12 @@ async def handle_text(message: types.Message):
                 attack_msg = 'Попадание по врагу!\n'
                 attack_enemy_msg = 'По вам попали!\n'
 
-            bot.send_message(cur_pl.player_id, attack_msg +
+            await bot.send_message(cur_pl.player_id, attack_msg +
                              '\nВаше поле:\n' + get_monospace_text(get_field(cur_pl.field)) +
                              '\nПоле врага:\n' + get_monospace_text(get_field(en.field_to_enemy)) +
                              '\nВыберите ячейку для атаки',
                              parse_mode='html')
-            bot.send_message(en.player_id,
+            await bot.send_message(en.player_id,
                              attack_enemy_msg +
                              '\nВаше поле:\n' + get_monospace_text(get_field(en.field)) +
                              '\nПоле врага:\n' + get_monospace_text(get_field(cur_pl.field_to_enemy)) +
@@ -279,7 +279,7 @@ async def callback_assign(call: types.CallbackQuery):
 
     if enemy.ready_to_play:
         cur_party.stage.v = 2
-        bot.send_message(cur_pl.player_id, 'Принято')
+        await bot.send_message(cur_pl.player_id, 'Принято')
         if cur_pl == first_player:
             await bot.send_message(cur_pl.player_id, stage_2_pl_1_text(cur_pl), parse_mode='html')
             await bot.send_message(enemy.player_id, stage_2_pl_2_text(enemy), parse_mode='html')
@@ -315,5 +315,4 @@ def register_game_handlers(dp: Dispatcher):
     dp.register_message_handler(assign_ships_2_deck, state=FSMShips.ships_2_decks)
     dp.register_message_handler(assign_ships_3_deck, state=FSMShips.ships_3_decks)
     dp.register_message_handler(assign_ships_finish, state=FSMShips.ship_4_decks)
-
     dp.register_message_handler(handle_text, content_types=['text'])
