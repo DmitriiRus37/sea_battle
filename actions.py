@@ -1,7 +1,7 @@
 from telebot import types
 from telebot.types import Message
 
-from bot_init import bot, players, stage
+from bot_init import bot, parties
 from cells import ship_cell
 from helpers import get_monospace_text, get_field, check_turn, get_user_by_id, \
     cells_set, get_stage_ship_decks_2_text, get_stage_ship_decks_3_text, get_stage_ship_decks_4_text
@@ -10,12 +10,14 @@ from validation import validate_ships, to_coord
 
 
 def assign_ships(message):
-    if stage.v != 1:
+    current_player = get_user_by_id(message.chat.id)
+    cur_party = current_player.party
+
+    if cur_party.stage.v != 1:
         bot.send_message(message.chat.id, 'Расставлять корабли еще рано. Ожидайте соперника')
         return
 
     text_list_ships = message.text.lower().split()
-    current_player = get_user_by_id(message.chat.id)
 
     ships_to_assign = current_player.stage_assign_decks
 
@@ -94,10 +96,11 @@ def valid_cell_to_attack(text):
 
 
 def attack_cell(msg: Message) -> None:
-    if stage.v != 2:
+    cur_pl = get_user_by_id(msg.chat.id)
+    cur_party = cur_pl.party
+    if cur_party.stage.v != 2:
         bot.send_message(msg.chat.id, 'Игра еще не начата.')
         return
-    cur_pl = get_user_by_id(msg.chat.id)
     if not check_turn(cur_pl):
         bot.send_message(msg.chat.id, 'Сейчас ходит ваш оппонент. Дождитесь своей очереди')
         return
@@ -122,10 +125,10 @@ def attack_cell(msg: Message) -> None:
     if found:
         dead_ship = en.attack_ship(coord_to_attack, sh)
         if en.all_ships_dead():
-            del players[:]
-            stage.v = 3
             bot.send_message(cur_pl.player_id, 'Вы победили. Вы потопили все вражеские корабли')
             bot.send_message(en.player_id, 'Вы проиграли. Ваши корабли потоплены')
+            parties.remove(cur_party)
+
             # TODO
             return
 

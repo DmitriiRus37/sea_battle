@@ -1,33 +1,47 @@
 from telebot.types import CallbackQuery, Message
 
 from actions import assign_ships, get_user_by_id, attack_cell
-from bot_init import bot, players, stage
+from bot_init import bot, parties
 from helpers import cells_set, get_stage_ship_decks_1_text, stage_2_pl_1_text, stage_2_pl_2_text
-from player_profile import PlayerProfile, PlayerNumber as Pl_num
+from party import Party
+from player_profile import PlayerProfile as Pl, PlayerNumber as Pl_num
 
 
 def send_start_to_play_message(message: Message):
-    if len(players) == 0:
-        player_1 = PlayerProfile(message.chat.id)
-        players.append(player_1)
-        player_1.player_number = Pl_num.first
+    if len(parties) == 0 or len(parties[len(parties) - 1].players) == 2:
+        cur_party = Party()
+        parties.append(cur_party)
+    else:
+        cur_party = parties[len(parties) - 1]
+
+    if len(cur_party.players) == 0:
+        bot.send_message(message.chat.id, 'Создание новой партии')
+        pl_1 = Pl(message.chat.id)
+        pl_1.party = cur_party
+        cur_party.players.append(pl_1)
+        pl_1.player_number = Pl_num.first
         bot.send_message(message.chat.id, 'Вы первый. Ожидайте второго игрока')
-    elif len(players) == 1:
-        player_2 = PlayerProfile(message.chat.id)
-        player_2.enemy = players[0]
-        players[0].enemy = player_2
-        players.append(player_2)
-        player_2.player_number = Pl_num.second
+    elif len(cur_party.players) == 1:
+        pl_2 = Pl(message.chat.id)
+        pl_2.party = cur_party
+        pl_2.enemy = cur_party.players[0]
+        cur_party.players[0].enemy = pl_2
+        cur_party.players.append(pl_2)
+        pl_2.player_number = Pl_num.second
         bot.send_message(message.chat.id, 'Вы второй.')
-        stage.v = 1
-        for p in players:
+        cur_party.stage.v = 1
+        for p in cur_party.players:
             p.stage_assign_decks = 1
 
         # TODO асинхронно надо отправлять
-        bot.send_message(players[0].player_id, get_stage_ship_decks_1_text(players[0]), parse_mode='html')
-        bot.send_message(players[1].player_id, get_stage_ship_decks_1_text(players[0]), parse_mode='html')
+        bot.send_message(
+            cur_party.players[0].player_id,
+            get_stage_ship_decks_1_text(cur_party.players[0]), parse_mode='html')
+        bot.send_message(
+            cur_party.players[1].player_id,
+            get_stage_ship_decks_1_text(cur_party.players[0]), parse_mode='html')
     else:
-        bot.send_message(message.chat.id, 'Уже идет игра. Подождите')
+        bot.send_message(message.chat.id, 'Создание новой партии')
 
 
 @bot.message_handler(commands=['start'])  # handle the command "start"
@@ -101,13 +115,14 @@ def callback_worker(call: CallbackQuery):
         current_player.stage_assign_decks = 0
         current_player.ready_to_play = True
         current_player.turn = True
+        cur_party = current_player.party
 
         enemy = current_player.enemy
 
         first_player = current_player if current_player.player_number == Pl_num.first else enemy
 
         if enemy.ready_to_play:
-            stage.v = 2
+            cur_party.stage.v = 2
             bot.send_message(current_player.player_id, 'Принято')
             if current_player == first_player:
                 # TODO асинхронно надо отправлять
