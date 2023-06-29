@@ -1,13 +1,17 @@
-from telebot import types
-
-from bot_init import players
+from bot_init import parties
+from party import Party
 from player_profile import PlayerProfile
 
 
 def get_user_by_id(p_id: int) -> PlayerProfile:
-    for p in players:
-        if p.player_id == p_id:
-            return p
+    players = set()
+    for party in parties:
+        for pl in party.players:
+            players.add(pl)
+
+    for pl in players:
+        if pl.player_id == p_id:
+            return pl
     return None
 
 
@@ -85,3 +89,8 @@ def stage_2_pl_2_text(pl: PlayerProfile):
     return 'Игра начинается.\nОжидайте хода первого игрока.\nВаше поле:\n' + \
         get_monospace_text(get_field(pl.field)) + \
         '\nПоле врага:\n' + get_monospace_text(get_field(pl.enemy.field_to_enemy))
+
+
+def assign_enemies(current_party: Party) -> None:
+    current_party.players[0].enemy = current_party.players[1]
+    current_party.players[1].enemy = current_party.players[0]

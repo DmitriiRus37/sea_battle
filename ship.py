@@ -1,18 +1,17 @@
 import enum
 
 from cells import bited_cell, missed_cell
-from validation import append_nearby_cells
 
 
 class Ship:
 
-    def __init__(self, cells):
-        self.cells = {}
+    def __init__(self, cells: list):
+        self.cells: dict = {}
         self.cells_to_map(cells)
-        self.dead = False
+        self.dead: bool = False
         self.count_of_decks = len(self.cells)
 
-    def cells_to_map(self, cells):
+    def cells_to_map(self, cells: list):
         for c in cells:
             self.cells[c] = True
 
@@ -48,3 +47,56 @@ class Deck(enum.Enum):
     two = 2
     three = 3
     four = 4
+
+
+def append_nearby_cells(busy_cells: set[int], coord: int) -> None:
+    busy_cells.add(coord)
+    if coord == 1:
+        busy_cells.add(coord + 1)
+        busy_cells.add(coord + 10)
+        busy_cells.add(coord + 10 + 1)
+    elif coord == 10:
+        busy_cells.add(coord - 1)
+        busy_cells.add(coord + 10)
+        busy_cells.add(coord + 10 - 1)
+    elif coord == 91:
+        busy_cells.add(coord + 1)
+        busy_cells.add(coord - 10)
+        busy_cells.add(coord - 10 + 1)
+    elif coord == 100:
+        busy_cells.add(coord - 1)
+        busy_cells.add(coord - 10)
+        busy_cells.add(coord - 10 - 1)
+    elif coord < 10:
+        busy_cells.add(coord - 1)
+        busy_cells.add(coord + 1)
+        busy_cells.add(coord + 10)
+        busy_cells.add(coord + 10 + 1)
+        busy_cells.add(coord + 10 - 1)
+    elif coord > 91:
+        busy_cells.add(coord - 1)
+        busy_cells.add(coord + 1)
+        busy_cells.add(coord - 10)
+        busy_cells.add(coord - 10 + 1)
+        busy_cells.add(coord - 10 - 1)
+    elif coord % 10 == 1:
+        busy_cells.add(coord + 1)
+        busy_cells.add(coord + 10)
+        busy_cells.add(coord - 10)
+        busy_cells.add(coord + 10 + 1)
+        busy_cells.add(coord - 10 + 1)
+    elif coord % 10 == 0:
+        busy_cells.add(coord - 1)
+        busy_cells.add(coord + 10)
+        busy_cells.add(coord - 10)
+        busy_cells.add(coord + 10 - 1)
+        busy_cells.add(coord - 10 - 1)
+    else:
+        busy_cells.add(coord + 1)
+        busy_cells.add(coord - 1)
+        busy_cells.add(coord + 10)
+        busy_cells.add(coord - 10)
+        busy_cells.add(coord + 10 + 1)
+        busy_cells.add(coord + 10 - 1)
+        busy_cells.add(coord - 10 + 1)
+        busy_cells.add(coord - 10 - 1)
