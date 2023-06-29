@@ -1,4 +1,5 @@
 from bot_init import parties
+from party import Party
 from player_profile import PlayerProfile
 
 
@@ -88,3 +89,8 @@ def stage_2_pl_2_text(pl: PlayerProfile):
     return 'Игра начинается.\nОжидайте хода первого игрока.\nВаше поле:\n' + \
         get_monospace_text(get_field(pl.field)) + \
         '\nПоле врага:\n' + get_monospace_text(get_field(pl.enemy.field_to_enemy))
+
+
+def assign_enemies(current_party: Party) -> None:
+    current_party.players[0].enemy = current_party.players[1]
+    current_party.players[1].enemy = current_party.players[0]

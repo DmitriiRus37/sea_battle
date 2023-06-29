@@ -8,7 +8,7 @@ from bot_init import bot, parties
 from bot_init import dp
 from cells import ship_cell
 from helpers import cells_set, stage_2_pl_1_text, stage_2_pl_2_text, \
-    check_turn
+    check_turn, assign_enemies
 from helpers import get_stage_ship_decks_1_text, get_stage_ship_decks_2_text, get_stage_ship_decks_3_text, \
     get_stage_ship_decks_4_text, get_user_by_id, get_monospace_text, get_field
 from party import Party
@@ -191,9 +191,8 @@ async def start_welcome(message: types.Message):
     elif len(cur_party.players) == 1:
         pl_2 = Pl(message.chat.id)
         pl_2.party = cur_party
-        pl_2.enemy = cur_party.players[0]
-        cur_party.players[0].enemy = pl_2
         cur_party.players.append(pl_2)
+        assign_enemies(cur_party)
         pl_2.player_number = Pl_num.second
         await message.answer("Вы второй.")
         cur_party.stage.v = 1
@@ -206,34 +205,17 @@ async def start_welcome(message: types.Message):
         await message.answer('Создание новой партии')
 
 
-def valid_cell_to_attack(text):
-    return text.split()[0].lower() in cells_set
-
-
 @dp.message_handler(content_types=['text'])  # handle with text
 async def handle_text(message: types.Message):
     message_text_array = message.text.split()
-
-    # match message_text_array[0]:
-    player = get_user_by_id(message.chat.id)
-    if player.stage_assign_decks != 0:
-        current_player = get_user_by_id(message.chat.id)
-        cur_party = current_player.party
-
-        if cur_party.stage.v != 1:
-            await message.answer(text='Расставлять корабли еще рано. Ожидайте соперника')
-            return
-    elif message_text_array[0].lower() in cells_set:
+    if message_text_array[0].lower() in cells_set:
         cur_pl = get_user_by_id(message.chat.id)
-        cur_party = cur_pl.party
+        cur_party = Party.get_current_party_by_player(cur_pl)
         if cur_party.stage.v != 2:
             await message.answer('Игра еще не начата.')
             return
         if not check_turn(cur_pl):
             await message.answer('Сейчас ходит ваш оппонент. Дождитесь своей очереди')
-            return
-        if not valid_cell_to_attack(message.text):
-            await message.answer('Невалидная ячейка. Введите еще раз')
             return
         cell_to_attack = message.text
         cur_pl = get_user_by_id(message.chat.id)
@@ -281,13 +263,13 @@ async def handle_text(message: types.Message):
             cur_pl.turn = False
             en.turn = True
             en.attack_sea(coord_to_attack)
-            bot.send_message(cur_pl.player_id, 'Вы промахнулись.\n' +
+            await bot.send_message(cur_pl.player_id, 'Вы промахнулись.\n' +
                              '\nВаше поле:\n' + get_monospace_text(get_field(cur_pl.field)) +
                              '\nПоле врага:\n' + get_monospace_text(get_field(en.field_to_enemy)) +
                              '\nОжидайте хода врага',
                              parse_mode='html'
                              )
-            bot.send_message(en.player_id, 'Противник промахнулся.\n' +
+            await bot.send_message(en.player_id, 'Противник промахнулся.\n' +
                              '\nВаше поле:\n' + get_monospace_text(get_field(en.field)) +
                              '\nПоле врага:\n' + get_monospace_text(get_field(cur_pl.field_to_enemy)) +
                              '\nВыберите ячейку для атаки',
@@ -298,30 +280,30 @@ async def handle_text(message: types.Message):
 
 @dp.callback_query_handler(lambda c: c.data == 'commit_ships')
 async def callback_assign(call: types.CallbackQuery):
-    current_player = get_user_by_id(call.from_user.id)
-    current_player.stage_assign_decks = 0
-    current_player.ready_to_play = True
-    current_player.turn = True
-    cur_party = Party.get_current_party(current_player)
+    cur_pl = get_user_by_id(call.from_user.id)
+    cur_pl.stage_assign_decks = 0
+    cur_pl.ready_to_play = True
+    cur_pl.turn = True
+    cur_party = Party.get_current_party_by_player(cur_pl)
 
-    enemy = current_player.enemy
+    enemy = cur_pl.enemy
 
-    first_player = current_player if current_player.player_number == Pl_num.first else enemy
+    first_player = cur_pl if cur_pl.player_number == Pl_num.first else enemy
 
     if enemy.ready_to_play:
         cur_party.stage.v = 2
-        bot.send_message(current_player.player_id, 'Принято')
-        if current_player == first_player:
-            await bot.send_message(current_player.player_id, stage_2_pl_1_text(current_player), parse_mode='html')
+        bot.send_message(cur_pl.player_id, 'Принято')
+        if cur_pl == first_player:
+            await bot.send_message(cur_pl.player_id, stage_2_pl_1_text(cur_pl), parse_mode='html')
             await bot.send_message(enemy.player_id, stage_2_pl_2_text(enemy), parse_mode='html')
         else:
             await bot.send_message(enemy.player_id, stage_2_pl_1_text(enemy), parse_mode='html')
-            await bot.send_message(current_player.player_id, stage_2_pl_2_text(current_player), parse_mode='html')
+            await bot.send_message(cur_pl.player_id, stage_2_pl_2_text(cur_pl), parse_mode='html')
     else:
-        if current_player == first_player:
-            await bot.send_message(current_player.player_id, 'Принято. Дождитесь второго игрока')
+        if cur_pl == first_player:
+            await bot.send_message(cur_pl.player_id, 'Принято. Дождитесь второго игрока')
         else:
-            await bot.send_message(current_player.player_id, 'Принято. Дождитесь первого игрока')
+            await bot.send_message(cur_pl.player_id, 'Принято. Дождитесь первого игрока')
 
 
 @dp.callback_query_handler(lambda c: c.data == 'reassign_ships')

@@ -14,7 +14,7 @@ class Party:
         self.stage: WrapValue = WrapValue(0)
 
     @staticmethod
-    def get_current_party(player: PlayerProfile):
+    def get_current_party_by_player(player: PlayerProfile):
         for p in parties:
             for pl in p.players:
                 if pl == player:
