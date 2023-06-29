@@ -1,7 +1,6 @@
 import enum
 
 from cells import bited_cell, empty_field, missed_cell
-from party import Party
 from ship import Ship
 
 
@@ -22,9 +21,7 @@ class PlayerProfile:
         # 2 - двухпалубных,
         # 3 - трехпалубных,
         # 4 - четырехпалубных
-        self.stage_assign_decks: int = 0
         self.busy_cells: set = set()
-        self.party: Party = None
 
     def find_ship_by_cell_attacked(self, cell: int) -> tuple[bool, Ship]:
         for sh in self.ships:
@@ -49,6 +46,7 @@ class PlayerProfile:
         self.ships = []
         self.field = empty_field()
         self.field_to_enemy = empty_field()
+        self.busy_cells.clear()
 
     def all_ships_dead(self):
         for sh in self.ships:

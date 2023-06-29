@@ -1,14 +1,15 @@
-import config
-import telebot
-
-from party import Party
-
-
-class WrapValue:
-    def __init__(self, v):
-        self.v = v
+import logging
+from aiogram import Bot, Dispatcher
+from config import API_TOKEN
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 
-bot = telebot.TeleBot(config.telegram_bot_token)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-parties: list[Party] = []
+# Initialize bot and dispatcher
+bot = Bot(token=API_TOKEN)
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
+
+parties: list = []

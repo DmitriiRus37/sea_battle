@@ -1,5 +1,6 @@
-from bot_init import WrapValue
+from bot_init import parties
 from player_profile import PlayerProfile
+from wrap import WrapValue
 
 
 class Party:
@@ -11,3 +12,11 @@ class Party:
         # 2: 'game_is_running',
         # 3: 'game_finished'
         self.stage: WrapValue = WrapValue(0)
+
+    @staticmethod
+    def get_current_party(player: PlayerProfile):
+        for p in parties:
+            for pl in p.players:
+                if pl == player:
+                    return p
+        return None

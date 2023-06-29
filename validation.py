@@ -1,4 +1,7 @@
 import math
+from aiogram import types
+
+from ship import Deck, append_nearby_cells
 
 
 def validate_ship_cells(cur_ship_cells: list[int]) -> bool:
@@ -19,30 +22,29 @@ def validate_ship_cells(cur_ship_cells: list[int]) -> bool:
     return True
 
 
-def validate_ships(busy_cells: set[int], ships: list[str], decks: int) -> bool:
+async def validate_ships(busy_cells: set[int], ships: list[str], decks: Deck, message: types.Message) -> bool:
     res = True
+    ships_count = len(ships)
+    ships_count_required = 0
+
     match decks:
-        case 1:
-            if len(ships) != 4:
-                res = False
-        case 2:
-            if len(ships) != 3:
-                res = False
-        case 3:
-            if len(ships) != 2:
-                res = False
-        case 4:
-            if len(ships) != 1:
-                res = False
-    if not res:
-        # TODO добавить к сообщению информацию о том, что ошибка возникла из-за неправильного числа кораблей
+        case Deck.one: ships_count_required = 4
+        case Deck.two: ships_count_required = 3
+        case Deck.three: ships_count_required = 2
+        case Deck.four: ships_count_required = 1
+
+    if ships_count != ships_count_required:
+        await message.answer('Введенное количество кораблей: ' + str(ships_count) + ', а необходимо: ' + str(ships_count_required))
         return False
     for i in range(len(ships)):
         sh = ships[i]
         cur_ship_cells = []
         for c in parse_ship_cells(sh):
-            valid, coord = get_int_coord(busy_cells, c)
-            if not valid:
+            coord = get_int_coord(c)
+            if coord < 1 or coord > 100:
+                coord = 101
+                res = False
+            if coord in busy_cells:
                 res = False
             cur_ship_cells.append(coord)
         if not validate_ship_cells(cur_ship_cells):
@@ -67,15 +69,10 @@ def parse_ship_cells(sh: str) -> list[str]:
     return cells_list
 
 
-def get_int_coord(busy_cells: set[int], cell: str) -> tuple[bool, int]:
+def get_int_coord(cell: str) -> int:
     letter = cell[:1].lower()
     digit = int(cell[1:])
-    coord = to_coord(letter, digit)
-    if coord < 1 or coord > 100:
-        return False, 101
-    if coord in busy_cells:
-        return False, coord
-    return True, coord
+    return to_coord(letter, digit)
 
 
 def to_coord(letter: str, digit: int) -> int:
@@ -105,56 +102,3 @@ def to_coord(letter: str, digit: int) -> int:
         case _:
             coord = 101
     return coord
-
-
-def append_nearby_cells(busy_cells: set[int], coord: int) -> None:
-    busy_cells.add(coord)
-    if coord == 1:
-        busy_cells.add(coord + 1)
-        busy_cells.add(coord + 10)
-        busy_cells.add(coord + 10 + 1)
-    elif coord == 10:
-        busy_cells.add(coord - 1)
-        busy_cells.add(coord + 10)
-        busy_cells.add(coord + 10 - 1)
-    elif coord == 91:
-        busy_cells.add(coord + 1)
-        busy_cells.add(coord - 10)
-        busy_cells.add(coord - 10 + 1)
-    elif coord == 100:
-        busy_cells.add(coord - 1)
-        busy_cells.add(coord - 10)
-        busy_cells.add(coord - 10 - 1)
-    elif coord < 10:
-        busy_cells.add(coord - 1)
-        busy_cells.add(coord + 1)
-        busy_cells.add(coord + 10)
-        busy_cells.add(coord + 10 + 1)
-        busy_cells.add(coord + 10 - 1)
-    elif coord > 91:
-        busy_cells.add(coord - 1)
-        busy_cells.add(coord + 1)
-        busy_cells.add(coord - 10)
-        busy_cells.add(coord - 10 + 1)
-        busy_cells.add(coord - 10 - 1)
-    elif coord % 10 == 1:
-        busy_cells.add(coord + 1)
-        busy_cells.add(coord + 10)
-        busy_cells.add(coord - 10)
-        busy_cells.add(coord + 10 + 1)
-        busy_cells.add(coord - 10 + 1)
-    elif coord % 10 == 0:
-        busy_cells.add(coord - 1)
-        busy_cells.add(coord + 10)
-        busy_cells.add(coord - 10)
-        busy_cells.add(coord + 10 - 1)
-        busy_cells.add(coord - 10 - 1)
-    else:
-        busy_cells.add(coord + 1)
-        busy_cells.add(coord - 1)
-        busy_cells.add(coord + 10)
-        busy_cells.add(coord - 10)
-        busy_cells.add(coord + 10 + 1)
-        busy_cells.add(coord + 10 - 1)
-        busy_cells.add(coord - 10 + 1)
-        busy_cells.add(coord - 10 - 1)

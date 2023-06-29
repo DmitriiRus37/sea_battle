@@ -1,13 +1,16 @@
-from telebot import types
-
-from bot_init import players
+from bot_init import parties
 from player_profile import PlayerProfile
 
 
 def get_user_by_id(p_id: int) -> PlayerProfile:
-    for p in players:
-        if p.player_id == p_id:
-            return p
+    players = set()
+    for party in parties:
+        for pl in party.players:
+            players.add(pl)
+
+    for pl in players:
+        if pl.player_id == p_id:
+            return pl
     return None
 
 
