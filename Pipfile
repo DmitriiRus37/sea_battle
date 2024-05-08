@@ -4,9 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pycodestyle = "==2.10.0"
-aiogram = "==3.3.0"
-
+pycodestyle = "==2.11.1"
+aiogram = "==3.6.0"
 
 [dev-packages]
 
